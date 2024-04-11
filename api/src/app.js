@@ -4,10 +4,10 @@ const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const routes = require("./routes/index.js");
 const { Pokemons, Type } = require("./db.js");
+const { Op } = require("sequelize");
 const { apiDataPokemons } = require("./ApiDataPokemons/apiDataPokemons.js");
-const {getPokemonById} = require('./ApiDataPokemons/getPokemonById.js')
-const axios = require("axios");
-
+const { getPokemonById } = require("./ApiDataPokemons/getPokemonById.js");
+const { getPokemonByName } = require("./ApiDataPokemons/getPokemonByName.js");
 
 require("./db.js").default;
 
@@ -31,26 +31,27 @@ server.use((req, res, next) => {
 });
 
 server.use("/", routes);
-// server.get("/pokemons", async (req, res) => {
-//   //  Obtiene un arreglo de objetos, donde cada objeto es un pokemon con su información.
-//   try {
-//     const pokemons = await apiDataPokemons();
-    
-//     res.status(201).json(pokemons);
-//   } catch (error) {
-    
-//     res.status(500).json({ error: "Hubo un problema al obtener los Pokémon." });
-//   }
-// });
+server.get("/pokemons", async (req, res) => {
+  //  Obtiene un arreglo de objetos, donde cada objeto es un pokemon con su información.
+  try {
+    const pokemons = await apiDataPokemons();
+
+    res.status(201).json(pokemons);
+  } catch (error) {
+    res.status(500).json({ error: "Hubo un problema al obtener los Pokémon." });
+  }
+});
 server.get("/pokemons/:idPokemon", async (req, res) => {
   const { idPokemon } = req.params;
-  
+
   try {
-    let pokemon;
-    
+    var pokemon;
+
     // Verificar si el ID es un UUID
-    const isUUID = idPokemon.match(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/);
-    
+    const isUUID = idPokemon.match(
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+    );
+
     if (isUUID) {
       // Buscar en la base de datos por UUID
       pokemon = await Pokemons.findByPk(idPokemon, { include: Type });
@@ -58,46 +59,85 @@ server.get("/pokemons/:idPokemon", async (req, res) => {
       // Si no es un UUID, asumir que es un número natural y buscar en el endpoint
       pokemon = await getPokemonById(idPokemon);
     }
-    
+
     // Si el Pokémon se encuentra en la base de datos o en la API, retornarlo
     if (pokemon) {
       res.status(200).json(pokemon);
     } else {
       // Si no se encontró en la base de datos ni en la API, devolver un error
-      res.status(404).json({ error: "El Pokémon no fue encontrado" });
+      res.status(404).json({ error: "El Pokémon no existe" });
     }
   } catch (error) {
-    
     res.status(500).json({ error: "Hubo un problema al obtener el Pokémon" });
   }
 });
-server.get("/pokemons/name", async (req, res) => {
-  // Esta ruta debe obtener todos aquellos pokemons que coinciden con el nombre recibido por query.
-  // Debe poder buscarlo independientemente de mayúsculas o minúsculas.
-  // Si no existe el pokemon, debe mostrar un mensaje adecuado.
-  // Debe buscar tanto los de la API como los de la base de datos.
+server.get("/pokemons/name/query", async (req, res) => {
+  const { name } = req.query;
+  try {
+    // Buscar en la base de datos por nombre, independientemente de mayúsculas o minúsculas
+    const findNamePokemons = await Pokemons.findAll({
+      where: {
+        name: {
+          [Op.iLike]: `%${name}%`, // Utilizar ILIKE para búsqueda insensible a mayúsculas y minúsculas
+        },
+      },
+    });
+
+    // Si el Pokémon se encuentra en la base de datos o en la API, retornarlo
+    if (findNamePokemons.length > 0) {
+      res.status(200).json(findNamePokemons);
+    } else {
+      // Si no se encuentran resultados en la base de datos, buscar en la PokeAPI
+      const pokemonFromAPI = await getPokemonByName(name);
+
+      // Si se encuentra el Pokémon en la PokeAPI, devolverlo
+      if (!pokemonFromAPI) {
+        res.status(404).json({ error: "El Pokémon no fue encontrado" });
+      } else {
+        // Si no se encuentra el Pokémon en la base de datos ni en la PokeAPI, devolver un error
+        res.status(200).json(pokemonFromAPI);
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Hubo un problema al obtener el Pokémon" });
+  }
 });
 server.post("/pokemons", async (req, res) => {
-  //   Esta ruta recibirá todos los datos necesarios para crear un pokemon 
+  //   Esta ruta recibirá todos los datos necesarios para crear un pokemon
   //y relacionarlo con sus tipos solicitados.
   //   Toda la información debe ser recibida por body.
   //   Debe crear un pokemon en la base de datos, y este debe estar relacionado con sus tipos indicados (debe poder relacionarse al menos con dos).
   try {
-    const { name, imagen, vida, ataque, defensa, velocidad, altura, peso, tipo } = req.body;
+    const {
+      name,
+      imagen,
+      vida,
+      ataque,
+      defensa,
+      velocidad,
+      altura,
+      peso,
+      tipo,
+    } = req.body;
 
     if (!tipo || tipo.length < 2) {
-      return res.status(400).json({ error: "Debe proporcionar al menos dos tipos para el Pokémon." });
+      return res.status(400).json({
+        error: "Debe proporcionar al menos dos tipos para el Pokémon.",
+      });
     }
 
     // Crear los tipos que no existan en la base de datos
-    const createdTypes = await Promise.all(tipo.map(async typeName => {
-      let existingType = await Type.findOne({ where: { nombre: typeName } });
-      if (!existingType) {
-        // Si el tipo no existe, créalo
-        existingType = await Type.create({ nombre: typeName });
-      }
-      return existingType;
-    }));
+    const createdTypes = await Promise.all(
+      tipo.map(async (typeName) => {
+        let existingType = await Type.findOne({ where: { nombre: typeName } });
+        if (!existingType) {
+          // Si el tipo no existe, créalo
+          existingType = await Type.create({ nombre: typeName });
+        }
+        return existingType;
+      })
+    );
 
     // Crear el Pokémon en la base de datos
     const newPokemon = await Pokemons.create({
@@ -109,7 +149,7 @@ server.post("/pokemons", async (req, res) => {
       velocidad,
       altura,
       peso,
-      tipo
+      tipo,
     });
 
     // Relacionar el Pokémon con los tipos proporcionados (existentes o recién creados)
@@ -129,7 +169,7 @@ server.post("/pokemons", async (req, res) => {
       velocidad: newPokemon.velocidad,
       altura: newPokemon.altura,
       peso: newPokemon.peso,
-      tipos: tiposDelPokemon.map(tipo => tipo.nombre) // Obtener solo los nombres de los tipos
+      tipos: tiposDelPokemon.map((tipo) => tipo.nombre), // Obtener solo los nombres de los tipos
     };
 
     res.status(201).json(pokemonResponse);
