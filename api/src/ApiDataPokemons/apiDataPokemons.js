@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 async function apiDataPokemons() {
-  let allPokemons = [];
+  var allPokemons = [];
 
   async function fetchPokemons(url) {
     try {

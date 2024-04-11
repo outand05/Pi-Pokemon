@@ -8,7 +8,7 @@ const { Op } = require("sequelize");
 const { apiDataPokemons } = require("./ApiDataPokemons/apiDataPokemons.js");
 const { getPokemonById } = require("./ApiDataPokemons/getPokemonById.js");
 const { getPokemonByName } = require("./ApiDataPokemons/getPokemonByName.js");
-
+const { getPokemonTypes } = require("./ApiDataPokemons/getPokemonType.js");
 require("./db.js").default;
 
 const server = express();
@@ -178,10 +178,48 @@ server.post("/pokemons", async (req, res) => {
   }
 });
 server.get("/type", async (req, res) => {
-  // Obtiene un arreglo con todos los tipos de pokemones.
-  // En una primera instancia, cuando la base de datos este vacía, deberás guardar todos los tipos que encuentres en la API.
-  // Estos deben ser obtenidos de la API (se evaluará que no haya hardcodeo). Luego de obtenerlos de la API, deben ser guardados en la base de datos para su posterior consumo desde allí.
+  try {
+    // Verificar si existen elementos en la base de datos
+    const dbTypes = await Type.findAll();
+
+    const typesExist = dbTypes.length > 0;
+    const apiTypes = await getPokemonTypes();
+
+    if (!typesExist) {
+      // Si la base de datos está vacía, crear todos los tipos de la API
+      await Type.bulkCreate(apiTypes.map(type => ({ nombre: type.nombre })));
+      const types = apiTypes.map(type => type.nombre);
+      res.json({ types });
+      return;
+    }
+
+    const newTypes = [];
+    for (const apiType of apiTypes) {
+      const existingType = dbTypes.find(dbType => dbType.nombre === apiType.nombre);
+      if (!existingType) {
+        // Si no existe en la base de datos, crearlo
+        await Type.create({ nombre: apiType.nombre });
+        newTypes.push(apiType.nombre);
+      }
+    }
+
+    if (newTypes.length > 0) {
+      // Si se crearon nuevos tipos, enviar un mensaje indicando los tipos creados
+      res.json({ message: "Nuevos tipos creados:", types: newTypes });
+    } else {
+      // Si no se crearon nuevos tipos, enviar un mensaje indicando que los tipos ya existen
+      const types = dbTypes.map(type => type.nombre);
+      res.json({ message: "Los tipos ya existen en la base de datos:",});
+    }
+  } catch (error) {
+    console.error("Error al obtener o guardar tipos de pokémon:", error);
+    res.status(500).json({ error: "Error al obtener o guardar tipos de pokémon" });
+  }
 });
+// Obtiene un arreglo con todos los tipos de pokemones.
+// En una primera instancia, cuando la base de datos este vacía, deberás guardar todos los tipos que encuentres en la API.
+// Estos deben ser obtenidos de la API (se evaluará que no haya hardcodeo).
+//Luego de obtenerlos de la API, deben ser guardados en la base de datos para su posterior consumo desde allí.
 
 // Error catching endware.
 server.use((err, req, res, next) => {
