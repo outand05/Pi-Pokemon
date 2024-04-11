@@ -45,26 +45,18 @@ server.get("/pokemons/:idPokemon", async (req, res) => {
   const { idPokemon } = req.params;
 
   try {
-    var pokemon;
-
     // Verificar si el ID es un UUID
     const isUUID = idPokemon.match(
       /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
     );
 
-    if (isUUID) {
-      // Buscar en la base de datos por UUID
-      pokemon = await Pokemons.findByPk(idPokemon, { include: Type });
-    } else {
-      // Si no es un UUID, asumir que es un número natural y buscar en el endpoint
-      pokemon = await getPokemonById(idPokemon);
-    }
+    const pokemon = isUUID
+      ? await Pokemons.findByPk(idPokemon, { include: Type })
+      : await getPokemonById(idPokemon);
 
-    // Si el Pokémon se encuentra en la base de datos o en la API, retornarlo
     if (pokemon) {
       res.status(200).json(pokemon);
     } else {
-      // Si no se encontró en la base de datos ni en la API, devolver un error
       res.status(404).json({ error: "El Pokémon no existe" });
     }
   } catch (error) {
@@ -127,19 +119,13 @@ server.post("/pokemons", async (req, res) => {
       });
     }
 
-    // Crear los tipos que no existan en la base de datos
     const createdTypes = await Promise.all(
       tipo.map(async (typeName) => {
-        let existingType = await Type.findOne({ where: { nombre: typeName } });
-        if (!existingType) {
-          // Si el tipo no existe, créalo
-          existingType = await Type.create({ nombre: typeName });
-        }
-        return existingType;
+        const existingType = await Type.findOne({ where: { nombre: typeName } });
+        return existingType ? existingType : await Type.create({ nombre: typeName });
       })
     );
 
-    // Crear el Pokémon en la base de datos
     const newPokemon = await Pokemons.create({
       name,
       imagen,
@@ -152,13 +138,10 @@ server.post("/pokemons", async (req, res) => {
       tipo,
     });
 
-    // Relacionar el Pokémon con los tipos proporcionados (existentes o recién creados)
     await newPokemon.setTypes(createdTypes);
 
-    // Obtener los tipos del nuevo Pokémon
     const tiposDelPokemon = await newPokemon.getTypes();
 
-    // Construir el objeto de respuesta con los tipos incluidos
     const pokemonResponse = {
       id: newPokemon.id,
       name: newPokemon.name,
@@ -169,7 +152,7 @@ server.post("/pokemons", async (req, res) => {
       velocidad: newPokemon.velocidad,
       altura: newPokemon.altura,
       peso: newPokemon.peso,
-      tipos: tiposDelPokemon.map((tipo) => tipo.nombre), // Obtener solo los nombres de los tipos
+      tipos: tiposDelPokemon.map((tipo) => tipo.nombre),
     };
 
     res.status(201).json(pokemonResponse);
