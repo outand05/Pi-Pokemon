@@ -2,8 +2,8 @@ import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <h1>Henry Pokemon</h1>
+    <div>
+      <h1>Pokemon Api</h1>
     </div>
   );
 }
