@@ -5,6 +5,7 @@ const axios = require('axios');
 async function getPokemonByName(name) {
   try {
     // Convertir el nombre del Pokémon a minúsculas
+    console.log('Nombre del Pokémon:', name)
     const lowercaseName = name.toLowerCase();
     
     // Construir la URL de la solicitud
