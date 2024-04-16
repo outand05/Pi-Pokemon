@@ -1,11 +1,18 @@
+import { GET_POKEMONS } from "./actions/actionsType";
 const initialState = {
-allCharacters:[]
-}
+  allPokemons: [],
+ 
+};
 
-const reducer = (state = initialState, action)=>{
-    switch(action.type){
-        default:
-            return {...state}
-    }
-}
-export default reducer
+const reducer = (state = initialState, action) => {
+  switch (action.type) {
+      case GET_POKEMONS:
+        return {
+            ...state,
+            allPokemons:action.payload
+        }
+    default:
+      return { ...state };
+  }
+};
+export default reducer;

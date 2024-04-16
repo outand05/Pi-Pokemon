@@ -1,0 +1,2 @@
+export const GET_POKEMONS = 'GET_POKEMONS'
+export const GET_POKEMONS_NAME ='GET_POKEMONS_NAME'

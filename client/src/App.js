@@ -1,9 +1,18 @@
-import './App.css';
+import "./App.css";
+import Cards from "./componentes/CardsPokemon";
+import { Routes, Route } from "react-router-dom";
+import LandingPage from "./componentes/landingPage";
 
+// import LandingPage from './componentes/landingPage'
 function App() {
   return (
     <div>
-      <h1>Pokemon Api</h1>
+      <Routes>
+        <Route path="/pokemonApi/home" element={<Cards />} />
+        <Route path="/pokemonApi" element={<LandingPage />} />
+
+      
+      </Routes>
     </div>
   );
 }
