@@ -14,7 +14,7 @@ const Cards = () => {
   return (
     <div>
       {allPokemons.map((pokemon) => (
-  <RenderCards key={pokemon.name} name={pokemon.name} url={pokemon.url} />
+  <RenderCards  name={pokemon.name} url={pokemon.url} />
 ))}
     </div>
   );
