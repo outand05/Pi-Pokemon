@@ -2,10 +2,10 @@ import { Link } from "react-router-dom";
 const RenderCard = ({ name, url }) => {
   return (
     <div>
-      <h1>{name}</h1>
       <Link to={`/pokemonApi/detail/${name}`}>
-        <h1>{url}</h1>
+      <h1>{name}</h1>
       </Link>
+        <h1>{url}</h1>
     </div>
   );
 };

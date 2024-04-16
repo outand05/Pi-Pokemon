@@ -1,5 +1,5 @@
 import "./App.css";
-import Cards from "./componentes/CardsPokemon";
+import Cards from "./componentes/cardsPokemon";
 import { Routes, Route } from "react-router-dom";
 import LandingPage from "./componentes/landingPage";
 import DetailPage from './componentes/detailPage'
@@ -10,7 +10,7 @@ function App() {
       <Routes>
         <Route path="/pokemonApi/home" element={<Cards />} />
         <Route path="/pokemonApi" element={<LandingPage />} />
-        <Route path="/pokemonApi/detail" element={<DetailPage />} />
+        <Route path="/pokemonApi/detail/:name" element={<DetailPage />} />
 
       
       </Routes>

@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { getPokemons } from "./../redux/actions/actions";
-import RenderCards from './RenderCard'
+import { getPokemons } from "../redux/actions/actions";
+import RenderCards from './renderCard'
 
 
 const Cards = () => {
@@ -9,6 +9,7 @@ const Cards = () => {
   const { allPokemons } = useSelector((state) => state);
   React.useEffect(() => {
       dispatch(getPokemons());
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     
   return (
