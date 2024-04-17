@@ -15,11 +15,3 @@ module.exports = router;
 
 
 
-// // Ruta para crear un nuevo Pokémon
-// router.post("/", async (req, res) => {
-//   try {
-//     // Lógica para crear un nuevo Pokémon
-//   } catch (error) {
-//     res.status(500).send(error.message);
-//   }
-// });
