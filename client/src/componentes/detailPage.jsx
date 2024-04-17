@@ -1,15 +1,3 @@
-// 📍 DETAIL PAGE | en esta vista se deberá mostrar toda la información específica de un pokemon:
-
-// ID.
-
-
-
-
-
-
-
-// Peso (si tiene).
-// Tipo.
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -19,16 +7,15 @@ const DetailPage = () => {
   const dispatch = useDispatch();
   const { pokemonDetail } = useSelector((state) => state);
   const { name } = useParams();
-  console.log(name);
   React.useEffect(() => {
     dispatch(getPokemonsDetail(name));
-  }, [dispatch, name]);
+  }, []);
 
   return (
     <div>
       {pokemonDetail && (
         <>
-          []
+          
           <p>
             {pokemonDetail.sprites && (
               <img
