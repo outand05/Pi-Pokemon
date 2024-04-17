@@ -1,4 +1,4 @@
-import { GET_POKEMONS_DETAIL, GET_POKEMONS,GET_DB_API } from "./actionsType.js";
+import { GET_POKEMONS_DETAIL, GET_POKEMONS,GET_DB_API, CLEAN_DETAIL,ADD_NEW_POKEMON} from "./actionsType.js";
 import axios from "axios";
 const URL = "https://pokeapi.co/api/v2/pokemon";
 const API_URL_DB = "http://localhost:3001/pokemons";
@@ -39,5 +39,14 @@ export const getDbApiPokemon = () => {
       console.error("error GET_DB_API:", error);
       throw error;
     }
+  };
+};
+export const cleanDetail = () =>{
+  return {type:CLEAN_DETAIL}
+}
+export const addNewPokemon = (newPokemon) => {
+  return {
+    type: ADD_NEW_POKEMON,
+    payload: newPokemon,
   };
 };

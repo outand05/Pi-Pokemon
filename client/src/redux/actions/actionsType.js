@@ -1,3 +1,5 @@
 export const GET_POKEMONS = 'GET_POKEMONS'
 export const GET_POKEMONS_DETAIL ='GET_POKEMONS_DETAIL'
 export const GET_DB_API ='GET_DB_API'
+export const CLEAN_DETAIL='CLEAN_DETAIL'
+export const ADD_NEW_POKEMON = 'ADD_NEW_POKEMON'

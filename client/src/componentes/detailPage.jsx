@@ -1,7 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { getPokemonsDetail } from "./../redux/actions/actions";
+import { getPokemonsDetail ,cleanDetail} from "./../redux/actions/actions";
 
 const DetailPage = () => {
   const dispatch = useDispatch();
@@ -9,7 +9,8 @@ const DetailPage = () => {
   const { name } = useParams();
   React.useEffect(() => {
     dispatch(getPokemonsDetail(name));
-  }, []);
+    return () =>(cleanDetail())
+  }, [name,dispatch]);
 
   return (
     <div>
