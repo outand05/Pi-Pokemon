@@ -5,7 +5,7 @@ module.exports = (sequelize) => {
 
     name: { type: DataTypes.STRING, allowNull: false,unique:true },
     imagen: { type: DataTypes.STRING,unique:true },
-    vida: { type: DataTypes.BIGINT, },
+    vida: { type: DataTypes.BIGINT,  allowNull: false },
     ataque: { type: DataTypes.BIGINT, allowNull: false },
     defensa: { type: DataTypes.BIGINT, allowNull: false },
     velocidad: { type: DataTypes.BIGINT },
